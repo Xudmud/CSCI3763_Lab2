@@ -1,6 +1,4 @@
-# CSCI3763_Lab2
-Lab 2 for Intro to Computer Networks: Socket Programming
-
+# CSCI3763_Lab2  
 -------------------------------------------------------------------------------  
  Name:       Gregory Wicklund  
  Student ID: 810906774  
