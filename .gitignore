@@ -1,3 +1,5 @@
 .gitignore
+.idea
 client/reqs
 server/reqs
+wic6774*
