@@ -1,6 +1,7 @@
 #Compiler and flags
 CC=gcc
-CFLAGS=-I $(IDIR) -g
+
+
 
 #Libraries
 LIBS=-lm
@@ -10,12 +11,13 @@ SERVROOT=server
 SERVIDIR=$(SERVROOT)/inc
 SERVODIR=$(SERVROOT)/obj
 SERVSRCDIR=$(SERVROOT)/src
-_SERVDEPS =
+_SERVDEPS = catalog.h download.h spwd.h upload.h
 SERVDEPS = $(patsubst %,$(SERVIDIR)/%,$(_SERVDEPS))
-_SERVOBJ = main.o
+_SERVOBJ = main.o catalog.o download.o spwd.o upload.o
 SERVOBJ = $(patsubst %,$(SERVODIR)/%,$(_SERVOBJ))
+SERVCFLAGS=-I $(SERVIDIR) -g
 $(SERVODIR)/%.o: $(SERVSRCDIR)/%.c $(DEPS)
-	$(CC) -c -o $@ $< $(CFLAGS)
+	$(CC) -c -o $@ $< $(SERVCFLAGS)
 SERVTARGET=wic6774sockserver
 
 #Client
@@ -23,20 +25,21 @@ CLIROOT=client
 CLIIDIR=$(CLIROOT)/inc
 CLIODIR=$(CLIROOT)/obj
 CLISRCDIR=$(CLIROOT)/src
-_CLIDEPS =
+_CLIDEPS = catalog.h download.h ls.h pwd.h spwd.h upload.h
 CLIDEPS = $(patsubst %,$(CLIIDIR)/%,$(_CLIDEPS))
-_CLIOBJ = main.o
+_CLIOBJ = main.o catalog.o download.o ls.o pwd.o spwd.o upload.o
 CLIOBJ = $(patsubst %,$(CLIODIR)/%,$(_CLIOBJ))
+CLICFLAGS=-I $(CLIIDIR) -g
 $(CLIODIR)/%.o: $(CLISRCDIR)/%.c $(DEPS)
-	$(CC) -c -o $@ $< $(CFLAGS)
+	$(CC) -c -o $@ $< $(CLICFLAGS)
 CLITARGET=wic6774sockclient
 
 all: $(SERVTARGET) $(CLITARGET)
 
 wic6774sockserver: $(SERVOBJ)
-	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+	$(CC) -o $@ $^ $(SERVCFLAGS) $(LIBS)
 wic6774sockclient: $(CLIOBJ)
-	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+	$(CC) -o $@ $^ $(CLICFLAGS) $(LIBS)
 
 #Prevent a file called "clean" from being removed by clean.
 #Unlikely, but just in case
