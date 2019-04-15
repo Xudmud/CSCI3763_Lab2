@@ -14,6 +14,7 @@
 #include "upload.h"
 #include "spwd.h"
 #include "functions.h"
+#include "calendar.h"
 
 #define PORT 24601 //I am Jean Valjean!
 
@@ -124,14 +125,15 @@ int main(int argc, char const *argv[])
                 if(strcmp(buf,"ls") == 0 || strcmp(buf,"pwd") == 0)
                 {
                     /* Send an empty message, to flush the socket. No output needed from the server */
-                    send(newSocket,"",0,0);
+                    //send(newSocket,"",0,0);
                 }
 
                 /* Next, check for exit statement. */
-                else if(strcmp(buf,"exit") == 0 || strcmp(buf,"logout") == 0 || strcmp(buf,"quit") == 0 || strcmp(buf,"bye") == 0)
+                else if(strcmp(buf,"exit") == 0 || strcmp(buf,"logout") == 0 || strcmp(buf,"quit") == 0 || strcmp(buf,"bye") == 0 || strcmp(buf,"") == 0)
                 {
                     /* Exit command, exit with 0 (child exits) */
-                    fprintf(stderr,"Bye\n");
+                    fprintf(stdout,"File copy server is down!\n");
+                    close(newSocket);
                     exit(0);
                 }
 
@@ -143,11 +145,13 @@ int main(int argc, char const *argv[])
                     if(strcmp(buf,"catalog") == 0)
                     {
                         servls(newSocket);
+                        /* Send "done" flag */
+                        send(newSocket,"ITEOTWAWKI",10,0);
                     }
                     else if(strcmp(buf,"spwd") == 0)
                     {
                         servpwd(newSocket);
-                        send(newSocket,"Not implemented.\n",17,0);
+                        send(newSocket,"ITEOTWAWKI",10,0);
                     }
                     else if(strstr(buf,"download") == buf)
                     {
@@ -157,9 +161,15 @@ int main(int argc, char const *argv[])
                     {
                         servul(newSocket,buf);
                     }
+                    else if(strcmp(buf,"calendar") == 0)
+                    {
+                        /* The original description said calendar, so here's calendar */
+                        servcal(newSocket);
+                        send(newSocket,"ITEOTWAWKI",10,0);
+                    }
                     else
                     {
-                        send(newSocket,"Error: Command not recognized.\n", 31, 0);
+                        send(newSocket,"1",1, 0);
                     }
 
                 }
@@ -172,7 +182,8 @@ int main(int argc, char const *argv[])
         else
         {
             /* Parent process */
-            fprintf(stderr,"Parent waiting for next connection...\n");
+            /* Do NOT wait since multiple concurrent connections are allowed. */
+            fprintf(stdout,"Parent waiting for next connection...\n");
         }
 
     }

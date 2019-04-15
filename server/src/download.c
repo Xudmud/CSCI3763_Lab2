@@ -28,14 +28,26 @@ void servdl(int sockfd, char* comm)
         int len;
         /* Get the filename to open */
         getdlfile(&comm);
+        /* Check with client that it can receive file */
+        recv(sockfd,buf,1024,0);
+        if(strcmp(buf,"1") == 0)
+        {
+            /* Client failed to open file. Exit. */
+            exit(1);
+        }
+        bzero(buf,1024);
         /* Open the file */
         FILE* ulfile = fopen(comm,"rb");
         if(ulfile == NULL)
         {
             perror("open");
-            /* Need to indicate to the client of fail */
+            send(sockfd,"1",1,0);
+            free(buf);
             exit(1);
         }
+        send(sockfd,"0",1,0);
+        recv(sockfd,buf,1024,0);
+        bzero(buf,1024);
         /* Next, send the file in chunks until eof */
         fprintf(stdout,"Sending file %s to client...",comm);
         while((len = fread(buf,sizeof(unsigned char),1024,ulfile)) > 0)
@@ -43,7 +55,6 @@ void servdl(int sockfd, char* comm)
             send(sockfd,buf,len,0);
             recv(sockfd,buf,1,0);
             bzero(buf,1024);
-            fprintf(stderr,"Buffer contents after clear: %s\n",buf);
         }
         fclose(ulfile);
         bzero(buf,1024);

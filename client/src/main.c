@@ -15,6 +15,7 @@
 #include "pwd.h"
 #include "spwd.h"
 #include "upload.h"
+#include "calendar.h"
 
 #define PORT 24601 //I am Jean Valjean!
 
@@ -40,7 +41,7 @@ int main(int argc, char const *argv[])
         perror("socket");
         exit(3);
     }
-    fprintf(stderr,"Successfully created socket connection: %d\n",clientSocket);
+    fprintf(stdout,"Successfully created socket connection!\n");
     memset(&servAddr, '\0', sizeof(servAddr));
     servAddr.sin_family = AF_INET;
     servAddr.sin_port = htons(PORT);
@@ -52,10 +53,9 @@ int main(int argc, char const *argv[])
         perror("Connect");
         exit(4);
     }
-    fprintf(stderr,"Connected to server successfully!\n");
+    fprintf(stdout,"Connected to server successfully!\n");
 
     //Now that we're connected... Run this infinitely until exit.
-    //Put the free code in here...?
     while(1)
     {
         /* Allocate a command buffer. */
@@ -66,6 +66,7 @@ int main(int argc, char const *argv[])
         buffer[strlen(buffer)-1] = '\0';
         /* Send the client message to the server. */
         send(clientSocket, buffer, strlen(buffer), 0);
+
         /* Process the command */
         /* First, check for an exit statement */
         if(strcmp(buffer, "exit") == 0 || strcmp(buffer, "logout") == 0 || strcmp(buffer, "quit") == 0 || strcmp(buffer, "bye") == 0)
@@ -73,6 +74,7 @@ int main(int argc, char const *argv[])
             /* Do I want to receive the goodbye message or just disconnect? */
             close(clientSocket);
             fprintf(stdout,"Disconnected from server.\n");
+            free(buffer);
             break;
         }
         /* Next check if the command is pwd or ls, since these are local to the client. */
@@ -81,38 +83,40 @@ int main(int argc, char const *argv[])
             /* Run the ls command. */
             clientls();
         }
+        else if (strcmp(buffer, "pwd") == 0)
+        {
+            /* run the pwd command */
+            clientpwd();
+        }
         else if(strstr(buffer,"upload") == buffer)
         {
             clientupload(clientSocket, buffer);
         }
-
         else if(strstr(buffer,"download") == buffer)
         {
             clientdownload(clientSocket, buffer);
-            fprintf(stderr,"File received!\n");
         }
         else
         {
-            if (strcmp(buffer, "pwd") == 0)
+            /* Other commands are sent to and need a response from the server */
+            if (strcmp(buffer, "spwd") == 0)
             {
-                /* run the pwd command */
-                clientpwd();
-            }
-                /* Other commands are sent to and need a response from the server */
-            else if (strcmp(buffer, "spwd") == 0) {
                 /* Run spwd, server responds with present directory */
-                clientspwd();
+                clientspwd(clientSocket);
             }
             else if (strcmp(buffer, "catalog") == 0)
             {
-                /* Server handles the lifting here. */
+                /* Run catalog, server runs ls and responds with results */
+                clientcatalog(clientSocket);
             }
-            if (recv(clientSocket, buffer, 1024, 0) < 0) {
-                perror("recv");
+            else if (strcmp(buffer,"calendar") == 0)
+            {
+                /* Here's the calendar the assignment description said we were doing */
+                clientcal(clientSocket);
             }
             else
             {
-                fprintf(stdout, "Server: \t%s\n", buffer);
+                fprintf(stdout,"Error: Command not understood.\n");
             }
         }
         /* Clear out extra data */
@@ -122,12 +126,13 @@ int main(int argc, char const *argv[])
             perror("fd");
             tempfd = 2;
         }
-        send(2, buffer, sizeof(buffer),MSG_DONTWAIT);
+        send(tempfd, buffer, sizeof(buffer),MSG_DONTWAIT);
+        /* Clear out the buffer */
+        recv(clientSocket, buffer, sizeof(buffer),MSG_DONTWAIT);
         close(tempfd);
         free(buffer);
 
     }
-    /* free the allocated buffer */
 
     return(0);
 }

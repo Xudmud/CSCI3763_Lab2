@@ -13,7 +13,6 @@ void flushbuf(char* buf)
 
 void getdlfile(char** comm)
 {
-    fprintf(stderr,"File to process: %s\n",*comm);
     /* Need to advance two spaces. */
     /* First to advance past the download command */
     while(**comm != '\0' && **comm != ' ')

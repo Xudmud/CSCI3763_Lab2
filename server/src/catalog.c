@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <sys/socket.h>
 #include "catalog.h"
 
 void servls(int sockfd)
@@ -31,5 +32,9 @@ void servls(int sockfd)
     {
         /* parent, wait for child */
         waitpid(child, &status, 0);
+        if(status != 0)
+        {
+            send(sockfd,"NUMBAHWAN",9,0);
+        }
     }
 }

@@ -33,9 +33,22 @@ void clientupload(int sockfd, char* comm)
         if(ulfile == NULL)
         {
             perror("open");
-            /* Need to indicate to the client of fail */
+            send(sockfd,"1",1,0);
             exit(1);
         }
+        send(sockfd,"0",1,0);
+        /* Next, make sure the server opened its file. */
+        recv(sockfd,buf,1024,0);
+        if(strcmp(buf,"1") == 0)
+        {
+            /* Server had problem. Close the file, free buf, and exit */
+            fprintf(stdout,"Server indicated problem opening file. Aborting.\n");
+            fclose(ulfile);
+            free(buf);
+            exit(1);
+
+        }
+        bzero(buf,1024);
         /* Next, send the file in chunks until eof */
         fprintf(stdout,"Sending");
         /* While there is still data to be read, read in 1024 bytes */
@@ -50,10 +63,13 @@ void clientupload(int sockfd, char* comm)
         }
         /* Done with the input file, close it */
         fclose(ulfile);
-        fprintf(stdout,"Done!\n");
         bzero(buf,1024);
         /* End of file, send the flag */
         send(sockfd,"ITEOTWAWKI",10,0);
+        fprintf(stdout,"Done!\n");
+        recv(sockfd,buf,3,0);
+        if(strcmp("FDE",buf) == 0)
+            fprintf(stdout,"Note: File %s was overwritten on server.\n",comm);
         free(buf);
         exit(0);
     }
