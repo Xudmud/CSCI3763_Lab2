@@ -13,6 +13,7 @@
 #include "download.h"
 #include "upload.h"
 #include "spwd.h"
+#include "functions.h"
 
 #define PORT 24601 //I am Jean Valjean!
 
@@ -115,46 +116,46 @@ int main(int argc, char const *argv[])
             {
                 /* Buffer for commands */
                 char* buf = calloc(1024, sizeof(char));
+                fprintf(stderr,"Waiting for command...\n");
                 recv(newSocket, buf, 1024, 0);
                 fprintf(stderr,"Client says: %s\n",buf);
                 /* Check what the command is and what action needs to be taken. */
                 /* First check: ls or pwd, no action is needed by the server. */
                 if(strcmp(buf,"ls") == 0 || strcmp(buf,"pwd") == 0)
                 {
-                    send(newSocket,"Not implemented.\n",17,0);
+                    /* Send an empty message, to flush the socket. No output needed from the server */
+                    send(newSocket,"",0,0);
                 }
 
                 /* Next, check for exit statement. */
                 else if(strcmp(buf,"exit") == 0 || strcmp(buf,"logout") == 0 || strcmp(buf,"quit") == 0 || strcmp(buf,"bye") == 0)
                 {
                     /* Exit command, exit with 0 (child exits) */
-                    fprintf(stdout,"Bye. Thank you for using the server!");
+                    fprintf(stderr,"Bye\n");
                     exit(0);
                 }
 
-                    /* Next, determine if the message is supported by the server */
+                /* Next, determine if the message is supported by the server */
+                /* If so, call the appropriate function and pass the socket fd */
                 else
                 {
                     /* Need if-statements for each possible command */
                     if(strcmp(buf,"catalog") == 0)
                     {
-                        servls();
-                        send(newSocket,"Not implemented.\n",17,0);
+                        servls(newSocket);
                     }
                     else if(strcmp(buf,"spwd") == 0)
                     {
-                        servpwd();
+                        servpwd(newSocket);
                         send(newSocket,"Not implemented.\n",17,0);
                     }
-                    else if(strcmp(buf,"download") == 0)
+                    else if(strstr(buf,"download") == buf)
                     {
-                        servdl();
-                        send(newSocket,"Not implemented.\n",17,0);
+                        servdl(newSocket, buf);
                     }
-                    else if(strcmp(buf,"upload") == 0)
+                    else if(strstr(buf,"upload") == buf)
                     {
-                        servul();
-                        send(newSocket,"Not implemented.\n",17,0);
+                        servul(newSocket,buf);
                     }
                     else
                     {
@@ -164,6 +165,7 @@ int main(int argc, char const *argv[])
                 }
                 /* Clear out extra data */
                 recv(newSocket, buf, sizeof(buf),MSG_DONTWAIT);
+                //send(newSocket,"",0,0);
                 free(buf);
             }
         }

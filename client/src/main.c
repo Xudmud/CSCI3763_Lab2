@@ -4,6 +4,7 @@
 #include <errno.h>
 #include <unistd.h>
 #include <netdb.h>
+#include <fcntl.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <netinet/in.h>
@@ -26,8 +27,7 @@ int main(int argc, char const *argv[])
     }
     int clientSocket, ret;
     struct sockaddr_in servAddr;
-    /* Allocate a command buffer. */
-    char* buffer = calloc(1024,sizeof(char*));
+
     struct hostent* he;
     if((he=gethostbyname(argv[1])) == NULL)
     {
@@ -58,14 +58,15 @@ int main(int argc, char const *argv[])
     //Put the free code in here...?
     while(1)
     {
-
-        fprintf(stderr,"Client: \t");
+        /* Allocate a command buffer. */
+        char* buffer = calloc(1024,sizeof(char*));
+        fprintf(stderr,">");
         fgets(buffer, 1024, stdin);
         /* STRIP THE DAMN NEWLINE */
         buffer[strlen(buffer)-1] = '\0';
         /* Send the client message to the server. */
         send(clientSocket, buffer, strlen(buffer), 0);
-
+        /* Process the command */
         /* First, check for an exit statement */
         if(strcmp(buffer, "exit") == 0 || strcmp(buffer, "logout") == 0 || strcmp(buffer, "quit") == 0 || strcmp(buffer, "bye") == 0)
         {
@@ -80,45 +81,53 @@ int main(int argc, char const *argv[])
             /* Run the ls command. */
             clientls();
         }
-
-        else if(strcmp(buffer, "pwd") == 0)
+        else if(strstr(buffer,"upload") == buffer)
         {
-            /* run the pwd command */
-            clientpwd();
-        }
-        /* Other commands are sent to and need a response from the server */
-        else if(strcmp(buffer, "spwd") == 0)
-        {
-            /* Run spwd, server responds with present directory */
-            clientspwd();
-        }
-        else if(strcmp(buffer,"catalog") == 0)
-        {
-            /* Run catalog, server-side ls */
-            clientcatalog();
-        }
-        else if(strcmp(buffer,"upload") == 0)
-        {
-            clientupload();
+            clientupload(clientSocket, buffer);
         }
 
-        else if(strcmp(buffer,"download") == 0)
+        else if(strstr(buffer,"download") == buffer)
         {
-            clientdownload();
-        }
-        if(recv(clientSocket, buffer, 1024, 0) < 0)
-        {
-            perror("recv");
+            clientdownload(clientSocket, buffer);
+            fprintf(stderr,"File received!\n");
         }
         else
         {
-            fprintf(stdout,"Server: \t%s\n", buffer);
+            if (strcmp(buffer, "pwd") == 0)
+            {
+                /* run the pwd command */
+                clientpwd();
+            }
+                /* Other commands are sent to and need a response from the server */
+            else if (strcmp(buffer, "spwd") == 0) {
+                /* Run spwd, server responds with present directory */
+                clientspwd();
+            }
+            else if (strcmp(buffer, "catalog") == 0)
+            {
+                /* Server handles the lifting here. */
+            }
+            if (recv(clientSocket, buffer, 1024, 0) < 0) {
+                perror("recv");
+            }
+            else
+            {
+                fprintf(stdout, "Server: \t%s\n", buffer);
+            }
         }
         /* Clear out extra data */
+        int tempfd = open("/dev/null",O_WRONLY);
+        if(tempfd < 0)
+        {
+            perror("fd");
+            tempfd = 2;
+        }
         send(2, buffer, sizeof(buffer),MSG_DONTWAIT);
+        close(tempfd);
+        free(buffer);
 
     }
     /* free the allocated buffer */
-    free(buffer);
+
     return(0);
 }

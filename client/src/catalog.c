@@ -3,5 +3,6 @@
 
 void clientcatalog()
 {
-    fprintf(stderr,"Client catalog not yet implemented.\n");
+    /* Placeholder, in case anything needs to be done on the client side */
+    return;
 }

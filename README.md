@@ -26,4 +26,7 @@ Client and Server will each need their own program, and are designed to run on
 separate machines. Split them into their own folders to keep code separate.
 
 --Update 9 April 2019--  
-Restructured makefiles to only use a single makefile, for ease of compilation.  The bin directories in server and cliet are probably not needed anymore...
+Restructured makefiles to only use a single makefile, for ease of compilation.  The bin directories in server and client are probably not needed anymore...
+
+--Update 13 April 2019--  
+Socket functionality is working, with placeholder text in place for the supported functions. Working on getting the functions implemented.
