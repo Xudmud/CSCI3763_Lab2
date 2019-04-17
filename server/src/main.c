@@ -15,6 +15,7 @@
 #include "spwd.h"
 #include "functions.h"
 #include "calendar.h"
+#include "cat.h"
 
 #define PORT 24601 //I am Jean Valjean!
 
@@ -167,6 +168,10 @@ int main(int argc, char const *argv[])
                         servcal(newSocket);
                         send(newSocket,"ITEOTWAWKI",10,0);
                     }
+                    else if(strstr(buf,"cat") == buf)
+                    {
+                        servcat(newSocket, buf);
+                    }
                     else
                     {
                         send(newSocket,"1",1, 0);
@@ -174,7 +179,7 @@ int main(int argc, char const *argv[])
 
                 }
                 /* Clear out extra data */
-                recv(newSocket, buf, sizeof(buf),MSG_DONTWAIT);
+                while(recv(newSocket, buf, sizeof(buf),MSG_DONTWAIT) > 0);
                 //send(newSocket,"",0,0);
                 free(buf);
             }
