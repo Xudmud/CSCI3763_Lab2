@@ -16,6 +16,7 @@
 #include "spwd.h"
 #include "upload.h"
 #include "calendar.h"
+#include "cat.h"
 
 #define PORT 24601 //I am Jean Valjean!
 
@@ -113,6 +114,10 @@ int main(int argc, char const *argv[])
             {
                 /* Here's the calendar the assignment description said we were doing */
                 clientcal(clientSocket);
+            }
+            else if(strstr(buffer, "cat") == buffer)
+            {
+                clientcat(clientSocket);
             }
             else
             {

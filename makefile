@@ -11,9 +11,9 @@ SERVROOT=server
 SERVIDIR=$(SERVROOT)/inc
 SERVODIR=$(SERVROOT)/obj
 SERVSRCDIR=$(SERVROOT)/src
-_SERVDEPS = catalog.h download.h spwd.h upload.h functions.h calendar.h
+_SERVDEPS = catalog.h download.h spwd.h upload.h functions.h calendar.h cat.h
 SERVDEPS = $(patsubst %,$(SERVIDIR)/%,$(_SERVDEPS))
-_SERVOBJ = main.o catalog.o download.o spwd.o upload.o functions.o calendar.o
+_SERVOBJ = main.o catalog.o download.o spwd.o upload.o functions.o calendar.o cat.o
 SERVOBJ = $(patsubst %,$(SERVODIR)/%,$(_SERVOBJ))
 SERVCFLAGS=-I $(SERVIDIR) -g
 $(SERVODIR)/%.o: $(SERVSRCDIR)/%.c $(DEPS)
@@ -25,9 +25,9 @@ CLIROOT=client
 CLIIDIR=$(CLIROOT)/inc
 CLIODIR=$(CLIROOT)/obj
 CLISRCDIR=$(CLIROOT)/src
-_CLIDEPS = catalog.h download.h ls.h pwd.h spwd.h upload.h functions.h calendar.h
+_CLIDEPS = catalog.h download.h ls.h pwd.h spwd.h upload.h functions.h calendar.h cat.h
 CLIDEPS = $(patsubst %,$(CLIIDIR)/%,$(_CLIDEPS))
-_CLIOBJ = main.o catalog.o download.o ls.o pwd.o spwd.o upload.o functions.o calendar.o
+_CLIOBJ = main.o catalog.o download.o ls.o pwd.o spwd.o upload.o functions.o calendar.o cat.o
 CLIOBJ = $(patsubst %,$(CLIODIR)/%,$(_CLIOBJ))
 CLICFLAGS=-I $(CLIIDIR) -g
 $(CLIODIR)/%.o: $(CLISRCDIR)/%.c $(DEPS)
