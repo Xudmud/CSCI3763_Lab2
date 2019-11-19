@@ -30,3 +30,11 @@ Restructured makefiles to only use a single makefile, for ease of compilation.  
 
 --Update 13 April 2019--  
 Socket functionality is working, with placeholder text in place for the supported functions. Working on getting the functions implemented.
+
+--Update 17 April 2019--
+Added cat support to test that data exceeding the buffer size can be sent
+across the socket.  
+
+--Update 17 April 2019 (#2)--
+Changed the recv() function after the client finishes reading a command to
+continue reading until the socket is clear.
